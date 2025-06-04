@@ -127,7 +127,7 @@ func (r *MediaServerController) RegisterController(mgr ctrl.Manager) error {
 }
 
 func (r *MediaServerController) RegisterApiEndpoints(mux *http.ServeMux) {
-	mux.HandleFunc(apiGroup+"/media-volume", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc(apiGroup+"/volume-usage", func(w http.ResponseWriter, r *http.Request) {
 		volumeInfoMemStore.RLock()
 		defer volumeInfoMemStore.RUnlock()
 
