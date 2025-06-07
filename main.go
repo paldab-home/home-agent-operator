@@ -6,7 +6,8 @@ import (
 	"os"
 
 	"paldab/home-agent-operator/config"
-	"paldab/home-agent-operator/controllers"
+	databasemanager "paldab/home-agent-operator/controllers/databaseManager"
+	mediaserver "paldab/home-agent-operator/controllers/mediaServer"
 
 	longhornv1beta2 "github.com/longhorn/longhorn-manager/k8s/pkg/apis/longhorn/v1beta2"
 	"go.uber.org/zap"
@@ -62,7 +63,7 @@ func setupMediaServerController(mgr ctrl.Manager) {
 		log.Fatal("could not start operator. missing MEDIASERVER_NAMESPACE env variable")
 	}
 
-	mediaServerController := controllers.MediaServerController{
+	mediaServerController := mediaserver.MediaServerController{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
 	}

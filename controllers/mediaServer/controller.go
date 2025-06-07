@@ -1,21 +1,21 @@
-package controllers
+package mediaserver
 
 import (
 	"context"
 	"encoding/json"
+	"math"
 	"net/http"
 	"paldab/home-agent-operator/config"
 	"strings"
-	"sync"
 	"time"
 
 	corev1 "k8s.io/api/core/v1"
 
 	longhornv1beta2 "github.com/longhorn/longhorn-manager/k8s/pkg/apis/longhorn/v1beta2"
 	"go.uber.org/zap"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
+
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -24,26 +24,6 @@ import (
 const (
 	apiGroup = "/media"
 )
-
-type MediaServerController struct {
-	Client client.Client
-	Scheme *runtime.Scheme
-}
-
-type VolumeInfo struct {
-	PvcName         string   `json:"pvcName"`
-	Namespace       string   `json:"namespace"`
-	SizeBytes       int64    `json:"sizeBytes"`
-	SizeGB          float64  `json:"sizeGB"`
-	ActualSizeBytes *int64   `json:"actualSizeBytes"`
-	ActualSizeGB    *float64 `json:"actualSizeGB"`
-	UpdatedAt       string   `json:"updatedAt"`
-}
-
-type VolumeInfoMemStore struct {
-	sync.RWMutex
-	volumeInfo VolumeInfo
-}
 
 var volumeInfoMemStore = &VolumeInfoMemStore{}
 
@@ -87,7 +67,7 @@ func (r *MediaServerController) Reconcile(ctx context.Context, req ctrl.Request)
 	}
 
 	sizeToGB := bytesToGB(longhornVolume.Spec.Size)
-	actualSizeToGB := bytesToGB(longhornVolume.Status.ActualSize)
+	actualSizeToGB := math.Round(bytesToGB(longhornVolume.Status.ActualSize))
 
 	volumeInfo := VolumeInfo{
 		PvcName:         pvc.GetName(),
@@ -134,9 +114,4 @@ func (r *MediaServerController) RegisterApiEndpoints(mux *http.ServeMux) {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(volumeInfoMemStore.volumeInfo)
 	})
-}
-
-func bytesToGB(bytes int64) float64 {
-	const bytesInGB = 1024 * 1024 * 1024
-	return float64(bytes) / float64(bytesInGB)
 }
