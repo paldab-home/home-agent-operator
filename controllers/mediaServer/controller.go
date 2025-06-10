@@ -28,7 +28,7 @@ const (
 var volumeInfoMemStore = &VolumeInfoMemStore{}
 
 func (r *MediaServerController) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	zap.L().Debug("watching resource", zap.String("resourceName", req.String()))
+	// zap.L().Debug("watching resource", zap.String("resourceName", req.String()))
 	var longhornVolume longhornv1beta2.Volume
 
 	if err := r.Client.Get(ctx, req.NamespacedName, &longhornVolume); err != nil {
@@ -52,7 +52,6 @@ func (r *MediaServerController) Reconcile(ctx context.Context, req ctrl.Request)
 	}
 
 	if pvc.Labels["media"] != "true" {
-		zap.L().Info("PVC is not a media PVC", zap.String("pvc", pvc.Name), zap.String("namespace", pvc.GetNamespace()))
 		return ctrl.Result{}, nil
 	}
 
@@ -83,6 +82,8 @@ func (r *MediaServerController) Reconcile(ctx context.Context, req ctrl.Request)
 	volumeInfoMemStore.Lock()
 	volumeInfoMemStore.volumeInfo = volumeInfo
 	volumeInfoMemStore.Unlock()
+
+	zap.L().Info("Media PVC found", zap.String("pvc", volumeInfoMemStore.volumeInfo.PvcName), zap.String("namespace", volumeInfoMemStore.volumeInfo.Namespace))
 
 	return ctrl.Result{}, nil
 }

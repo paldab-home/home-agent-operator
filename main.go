@@ -74,3 +74,14 @@ func setupMediaServerController(mgr ctrl.Manager) {
 		log.Fatalf("failed to add controller to controller manager. error: %v", err)
 	}
 }
+
+func setupDatabaseScalerController(mgr ctrl.Manager) {
+	databaseScalerControler := databasemanager.DatabaseManagerController{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}
+
+	if err := databaseScalerControler.RegisterController(mgr); err != nil {
+		log.Fatalf("failed to add controller to controller manager. error: %v", err)
+	}
+}

@@ -1,0 +1,11 @@
+apiVersion: paldab.io/v1
+kind: DatabaseInstance
+metadata:
+  name: mysql-instance
+spec:
+  type: mysql
+  scaleOnPodPresence: true
+  statefulSetRef:
+    name: mysql-instance
+    namespace: mysql
+
