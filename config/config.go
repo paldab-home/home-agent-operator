@@ -15,8 +15,7 @@ const (
 	ERR_RETRY_TIMEOUT = time.Minute * 5
 
 	// global labels
-	MANAGED_BY_OPERATOR_LABEL    = "operator.paldab.io/managed-by"
-	DATABASE_INSTANCE_NAME_LABEL = "operator.paldab.io/database-name"
+	DATABASE_INSTANCE_NAME_LABEL = "operator.paldab.io/database-instance-name"
 	POD_NEEDS_DATABASE_LABEL     = "operator.paldab.io/database"
 )
 

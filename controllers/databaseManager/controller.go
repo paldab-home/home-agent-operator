@@ -22,11 +22,6 @@ func (r *DatabaseManagerController) Reconcile(ctx context.Context, req ctrl.Requ
 
 	// if target is sts
 	if err == nil {
-		// Checks if this operator is managing it
-		if sts.Labels[config.MANAGED_BY_OPERATOR_LABEL] != "home-agent" {
-			return ctrl.Result{}, nil
-		}
-
 		databaseName, ok := sts.Labels[config.DATABASE_INSTANCE_NAME_LABEL]
 
 		if !ok {
@@ -66,20 +61,15 @@ func (r *DatabaseManagerController) RegisterController(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).For(&corev1.Pod{}).
 		Watches(&appsv1.StatefulSet{}, handler.EnqueueRequestsFromMapFunc(func(ctx context.Context, o client.Object) []reconcile.Request {
 			sts := o.(*appsv1.StatefulSet)
-			var isManagedByOperator bool = false
 			var databaseName string = ""
 
 			for k, v := range sts.Labels {
-				if k == config.MANAGED_BY_OPERATOR_LABEL && v == "home-agent" {
-					isManagedByOperator = true
-				}
-
 				if k == config.DATABASE_INSTANCE_NAME_LABEL {
 					databaseName = v
 				}
 			}
 
-			if isManagedByOperator && databaseName != "" {
+			if databaseName != "" {
 				return []reconcile.Request{
 					{
 						NamespacedName: types.NamespacedName{
