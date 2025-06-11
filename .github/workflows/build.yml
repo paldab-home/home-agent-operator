@@ -45,6 +45,7 @@ jobs:
   deploy:
     name: Update argocd repo
     runs-on: ubuntu-latest
+    needs: push_to_registry
     if: startsWith(github.ref, 'refs/tags/')
 
     steps:
