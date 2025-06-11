@@ -32,7 +32,7 @@ func main() {
 	// Handles API on different routine
 	go setupAPI()
 
-	// setupMediaServerController(mgr)
+	setupMediaServerController(mgr)
 
 	setupDatabaseScalerController(mgr)
 
