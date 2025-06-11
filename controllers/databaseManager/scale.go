@@ -9,17 +9,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func scaleUpDatabase(ctx context.Context, k8sClient client.Client, name string) {
+func scaleUpDatabase(ctx context.Context, k8sClient client.Client, databaseSts types.NamespacedName) {
 	sts := &appsv1.StatefulSet{}
 
-	// TODO maybe CRD
-	databaseStsPayload := types.NamespacedName{
-		Name:      "",
-		Namespace: "",
-	}
-
-	if err := k8sClient.Get(ctx, databaseStsPayload, sts); err != nil {
-		zap.L().Error("could not find database", zap.String("databaseName", name), zap.String("namespace", ""), zap.Error(err))
+	if err := k8sClient.Get(ctx, databaseSts, sts); err != nil {
+		zap.L().Error("could not find requested database", zap.String("statefulset", databaseSts.Name), zap.String("namespace", databaseSts.Namespace), zap.Error(err))
 		return
 	}
 
@@ -27,22 +21,17 @@ func scaleUpDatabase(ctx context.Context, k8sClient client.Client, name string) 
 		return
 	}
 
+	zap.L().Info("found multiple pods that require "+databaseSts.Name+" scaling up", zap.String("controller", databaseSts.Name), zap.String("namespace", databaseSts.Namespace))
 	var one int32 = 1
 	sts.Spec.Replicas = &one
 	k8sClient.Update(ctx, sts)
 }
 
-func scaleDownDatabase(ctx context.Context, k8sClient client.Client, name string) {
-	sts := &appsv1.StatefulSet{}
+func scaleDownDatabase(ctx context.Context, k8sClient client.Client, databaseSts types.NamespacedName) {
+	sts := appsv1.StatefulSet{}
 
-	// TODO
-	databaseStsPayload := types.NamespacedName{
-		Name:      "",
-		Namespace: "",
-	}
-
-	if err := k8sClient.Get(ctx, databaseStsPayload, sts); err != nil {
-		zap.L().Error("could not find database", zap.String("databaseName", name), zap.String("namespace", ""), zap.Error(err))
+	if err := k8sClient.Get(ctx, databaseSts, &sts); err != nil {
+		zap.L().Error("could not find requested database", zap.String("statefulset", databaseSts.Name), zap.String("namespace", databaseSts.Namespace), zap.Error(err))
 		return
 	}
 
@@ -50,8 +39,8 @@ func scaleDownDatabase(ctx context.Context, k8sClient client.Client, name string
 		return
 	}
 
+	zap.L().Info("found no pods that require "+databaseSts.Name+" scaling down", zap.String("controller", databaseSts.Name), zap.String("namespace", databaseSts.Namespace))
 	var zero int32 = 0
 	sts.Spec.Replicas = &zero
-	k8sClient.Update(ctx, sts)
+	k8sClient.Update(ctx, &sts)
 }
-

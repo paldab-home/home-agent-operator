@@ -13,16 +13,17 @@ import (
 	"go.uber.org/zap"
 	"k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
-	ctrlzap "sigs.k8s.io/controller-runtime/pkg/log/zap"
 )
 
 var router *http.ServeMux = http.NewServeMux()
 
-func main() {
+func init() {
 	config.GetConfig()
-	setupLogger()
+	config.SetupLogger()
 	longhornv1beta2.AddToScheme(scheme.Scheme)
+}
 
+func main() {
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{Scheme: scheme.Scheme})
 	if err != nil {
 		log.Fatalf("failed to construct manager: %w", err)
@@ -31,23 +32,13 @@ func main() {
 	// Handles API on different routine
 	go setupAPI()
 
-	setupMediaServerController(mgr)
+	// setupMediaServerController(mgr)
+
+	setupDatabaseScalerController(mgr)
 
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		log.Fatalf("failed to start controller. error: %v", err)
 	}
-}
-
-func setupLogger() {
-	cfg := zap.NewDevelopmentConfig()
-
-	logger, err := cfg.Build()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	ctrl.SetLogger(ctrlzap.New(ctrlzap.UseDevMode(true)))
-	zap.ReplaceGlobals(logger)
 }
 
 func setupAPI() {
