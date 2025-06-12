@@ -65,18 +65,7 @@ func (r *MediaServerController) Reconcile(ctx context.Context, req ctrl.Request)
 		zap.L().Error("failed to find any media pvc")
 	}
 
-	sizeToGB := bytesToGB(longhornVolume.Spec.Size)
-	actualSizeToGB := math.Round(bytesToGB(longhornVolume.Status.ActualSize))
-
-	volumeInfo := VolumeInfo{
-		PvcName:         pvc.GetName(),
-		Namespace:       config.MEDIASERVER_NAMESPACE,
-		SizeBytes:       longhornVolume.Spec.Size,
-		ActualSizeBytes: &longhornVolume.Status.ActualSize,
-		SizeGB:          sizeToGB,
-		ActualSizeGB:    &actualSizeToGB,
-		UpdatedAt:       time.Now().Format(time.RFC3339),
-	}
+	volumeInfo := extractVolumeInfo(pvc, longhornVolume)
 
 	// Store in memory
 	volumeInfoMemStore.Lock()
@@ -86,6 +75,21 @@ func (r *MediaServerController) Reconcile(ctx context.Context, req ctrl.Request)
 	zap.L().Info("Media PVC found", zap.String("pvc", volumeInfoMemStore.volumeInfo.PvcName), zap.String("namespace", volumeInfoMemStore.volumeInfo.Namespace))
 
 	return ctrl.Result{}, nil
+}
+
+func extractVolumeInfo(pvc *corev1.PersistentVolumeClaim, longhornVolume longhornv1beta2.Volume) VolumeInfo {
+	sizeToGB := bytesToGB(longhornVolume.Spec.Size)
+	actualSizeToGB := math.Round(bytesToGB(longhornVolume.Status.ActualSize))
+
+	return VolumeInfo{
+		PvcName:         pvc.GetName(),
+		Namespace:       config.MEDIASERVER_NAMESPACE,
+		SizeBytes:       longhornVolume.Spec.Size,
+		ActualSizeBytes: &longhornVolume.Status.ActualSize,
+		SizeGB:          sizeToGB,
+		ActualSizeGB:    &actualSizeToGB,
+		UpdatedAt:       time.Now().Format(time.RFC3339),
+	}
 }
 
 func (r *MediaServerController) RegisterController(mgr ctrl.Manager) error {
