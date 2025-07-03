@@ -2,3 +2,36 @@ Home operator with modular controllers design
 
 # controllers
 - 1. Jellyfin media storage controller
+
+# MediaServer Controller
+## Dependencies
+- controller-runtime
+- k8s.io
+- longhorn-manager
+
+## Environment variables
+- MEDIASERVER_NAMESPACE - Namespace where the mediaserver is located
+
+# DatabaseManager Controller
+## Dependencies
+- controller-runtime
+- k8s.io
+
+# RepoServer 
+Watches repos and saves them in a channel for other services to listen to
+
+## Dependencies
+- go-github
+
+## Environment variables
+- GITHUB_TOKEN - Personal Access Token from Github to authenticate with the platform
+- GITHUB_ORG - Organization that you want to fetch the repositories from
+
+# Sonarqube Controller
+## Dependencies
+- controller-runtime
+- k8s.io
+
+
+## Ideas
+Probably better to use something like sqlLite or Mysql option to store sonarqube repo cache

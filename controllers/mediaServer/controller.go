@@ -92,8 +92,10 @@ func extractVolumeInfo(pvc *corev1.PersistentVolumeClaim, longhornVolume longhor
 	}
 }
 
-func (r *MediaServerController) RegisterController(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).For(&longhornv1beta2.Volume{}).
+func (r *MediaServerController) SetupWithManager(mgr ctrl.Manager) error {
+	return ctrl.NewControllerManagedBy(mgr).
+		Named("MediaServerManager").
+		For(&longhornv1beta2.Volume{}).
 		Watches(&corev1.PersistentVolumeClaim{}, handler.EnqueueRequestsFromMapFunc(func(ctx context.Context, o client.Object) []reconcile.Request {
 			pvc := o.(*corev1.PersistentVolumeClaim)
 			if pvc.Labels["media"] != "true" || pvc.Spec.VolumeName == "" {
@@ -104,7 +106,7 @@ func (r *MediaServerController) RegisterController(mgr ctrl.Manager) error {
 				{
 					NamespacedName: types.NamespacedName{
 						Name:      pvc.Spec.VolumeName,
-						Namespace: pvc.Namespace,
+						Namespace: pvc.GetNamespace(),
 					},
 				}}
 		})).
