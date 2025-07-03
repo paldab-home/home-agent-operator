@@ -57,11 +57,13 @@ func (r *DatabaseManagerController) Reconcile(ctx context.Context, req ctrl.Requ
 }
 
 // Also watch custom CRDS
-func (r *DatabaseManagerController) RegisterController(mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).For(&corev1.Pod{}).
+func (r *DatabaseManagerController) SetupWithManager(mgr ctrl.Manager) error {
+	return ctrl.NewControllerManagedBy(mgr).
+		Named("DatabaseManager").
+		For(&corev1.Pod{}).
 		Watches(&appsv1.StatefulSet{}, handler.EnqueueRequestsFromMapFunc(func(ctx context.Context, o client.Object) []reconcile.Request {
 			sts := o.(*appsv1.StatefulSet)
-			var databaseName string = ""
+			var databaseName = ""
 
 			for k, v := range sts.Labels {
 				if k == config.DATABASE_INSTANCE_NAME_LABEL {

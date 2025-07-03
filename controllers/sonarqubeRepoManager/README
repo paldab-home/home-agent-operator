@@ -1,0 +1,21 @@
+# Sonarqube Repo Manager
+
+- Get repos to manage (need github token for that api call)
+    - Add envs for github token and probably url or organization or smth
+    - Option to use CRDS or config file
+        - On CRD
+            spec:
+                kind: account | organization
+                repositories: [names | *]
+            status:
+                lastSync: datetime
+- save in cache
+- Watch each repo and (on commit or every 5 minutes for changes)
+    - If there is a change, Deploy a job that clones target repo and runs sonarqube command to scan
+        - Build docker image with sonarqube CLI and github installed and ARGS envs like github_pat and sonar envs
+        - This job needs to authenticate with sonarqube (Using envs like SONAR_HOST_URL and SONAR_TOKEN)
+        - Needs to authenticate with Github (probably via token)
+        - Needs to pull target repo
+        - Run sonarqube CLI for scan
+        - Return exit 0 on success or exit 1 on fail
+
