@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	ctrl "sigs.k8s.io/controller-runtime"
 	ctrlzap "sigs.k8s.io/controller-runtime/pkg/log/zap"
 )
@@ -57,6 +58,8 @@ func GetConfig() {
 func SetupLogger() {
 	if ENV == "dev" {
 		cfg := zap.NewDevelopmentConfig()
+		cfg.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+
 		logger, err := cfg.Build()
 		if err != nil {
 			log.Fatal(err)
@@ -66,7 +69,9 @@ func SetupLogger() {
 		zap.ReplaceGlobals(logger)
 	} else {
 		cfg := zap.NewProductionConfig()
+		cfg.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 		cfg.DisableCaller = true
+
 		logger, err := cfg.Build()
 		if err != nil {
 			log.Fatal(err)
