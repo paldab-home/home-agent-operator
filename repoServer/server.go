@@ -23,7 +23,7 @@ func (r *RepoServer) StartServer(ctx context.Context) error {
 	manualRefreshChan := make(chan struct{})
 	quit := make(chan struct{})
 
-	zap.L().Info("Starting reposerver", zap.String("client", "github"), zap.Bool("Using GITHUB_TOKEN", isAuthenticatedUser), zap.Any("refreshInterval", r.RefreshInterval))
+	zap.L().Info("Starting reposerver", zap.String("client", "github"), zap.Bool("Using GITHUB_TOKEN", isAuthenticatedUser), zap.Duration("refreshInterval", r.RefreshInterval))
 
 	for {
 		select {
@@ -76,7 +76,10 @@ func (r *RepoServer) refreshRepos() {
 		}
 
 		r.RepoChannel <- repoObject
+
 	}
+
+	zap.L().Info("Next repository refresh scheduled", zap.Time("scheduledAt", time.Now().Add(r.RefreshInterval)))
 }
 
 func (r *RepoServer) serverGracefulShutdown(ticker *time.Ticker) {

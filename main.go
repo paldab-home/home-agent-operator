@@ -114,6 +114,8 @@ func setupSonarqubeManager(mgr ctrl.Manager, channel <-chan reposerver.RepoChann
 		RepoChannel: channel,
 	}
 
+	sonarqubeManagerController.RegisterApiEndpoints(router)
+
 	go sonarqubeManagerController.StartProcessingRepoChannel()
 
 	// if err := sonarqubeManagerController.SetupWithManager(mgr); err != nil {

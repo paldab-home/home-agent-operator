@@ -2,6 +2,8 @@ package sonarquberepomanager
 
 import (
 	"context"
+	"encoding/json"
+	"net/http"
 	"paldab/home-agent-operator/config"
 	"time"
 
@@ -12,6 +14,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+)
+
+const (
+	apiGroup = "/sonar"
 )
 
 var trackedRepositories map[string]*SonarScanObject
@@ -56,6 +62,15 @@ func (r *SonarqubeRepoManager) SetupWithManager(mgr ctrl.Manager) error {
 			}
 		})).
 		Complete(r)
+}
+
+func (r *SonarqubeRepoManager) RegisterApiEndpoints(mux *http.ServeMux) {
+	mux.HandleFunc(apiGroup+"/repos", func(w http.ResponseWriter, r *http.Request) {
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(&trackedRepositories)
+	})
+
 }
 
 func (r *SonarqubeRepoManager) StartProcessingRepoChannel() {
