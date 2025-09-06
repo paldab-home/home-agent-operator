@@ -6,6 +6,7 @@ import (
 
 	"go.uber.org/zap"
 	appsv1 "k8s.io/api/apps/v1"
+	v1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -35,9 +36,15 @@ func (r *DatabaseManagerController) Reconcile(ctx context.Context, req ctrl.Requ
 
 	for _, db := range databaseInstancesMemoryStore.data {
 		var pods corev1.PodList
+		var cronJobs v1.CronJobList
 
-		err := r.Client.List(ctx, &pods, client.MatchingLabels{config.POD_NEEDS_DATABASE_LABEL: db.DatabaseName})
-		if err != nil {
+		podHasLabelRequestErr := r.Client.List(ctx, &pods, client.MatchingLabels{config.POD_NEEDS_DATABASE_LABEL: db.DatabaseName})
+		if podHasLabelRequestErr != nil {
+			continue
+		}
+
+		cronjobHasLabelRequestErr := r.Client.List(ctx, &cronJobs, client.MatchingLabels{config.POD_NEEDS_DATABASE_LABEL: db.DatabaseName})
+		if cronjobHasLabelRequestErr != nil {
 			continue
 		}
 
@@ -46,7 +53,7 @@ func (r *DatabaseManagerController) Reconcile(ctx context.Context, req ctrl.Requ
 			Namespace: db.Namespace,
 		}
 
-		if len(pods.Items) > 0 {
+		if len(pods.Items) > 0 || len(cronJobs.Items) > 0 {
 			scaleUpDatabase(ctx, r.Client, targetDB)
 		} else {
 			scaleDownDatabase(ctx, r.Client, targetDB)
