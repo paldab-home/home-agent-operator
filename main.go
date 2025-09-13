@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"paldab/home-agent-operator/config"
-	databasemanager "paldab/home-agent-operator/controllers/databaseManager"
 	mediaserver "paldab/home-agent-operator/controllers/mediaServer"
 	sonarquberepomanager "paldab/home-agent-operator/controllers/sonarqubeRepoManager"
 	reposerver "paldab/home-agent-operator/repoServer"
@@ -42,8 +41,6 @@ func main() {
 	go setupRepoServer(ctx, repoChannel)
 
 	setupMediaServerController(mgr)
-
-	setupDatabaseScalerController(mgr)
 
 	setupSonarqubeManager(mgr, repoChannel)
 
@@ -92,17 +89,6 @@ func setupMediaServerController(mgr ctrl.Manager) {
 	mediaServerController.RegisterApiEndpoints(router)
 
 	if err := mediaServerController.SetupWithManager(mgr); err != nil {
-		log.Fatalf("failed to add controller to controller manager. error: %v", err)
-	}
-}
-
-func setupDatabaseScalerController(mgr ctrl.Manager) {
-	databaseScalerControler := databasemanager.DatabaseManagerController{
-		Client: mgr.GetClient(),
-		Scheme: mgr.GetScheme(),
-	}
-
-	if err := databaseScalerControler.SetupWithManager(mgr); err != nil {
 		log.Fatalf("failed to add controller to controller manager. error: %v", err)
 	}
 }

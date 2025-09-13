@@ -17,10 +17,6 @@ const (
 	API_PORT          = 8080
 	ERR_RETRY_TIMEOUT = time.Minute * 5
 	APP_NAME          = "home-agent-operator"
-
-	// database labels
-	DATABASE_INSTANCE_NAME_LABEL = "operator.paldab.io/database-instance-name"
-	POD_NEEDS_DATABASE_LABEL     = "operator.paldab.io/database"
 )
 
 var (
